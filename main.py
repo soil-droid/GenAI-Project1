@@ -1,14 +1,19 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from agent.agent import release_agent
+from agent import github_agent
 
-app = FastAPI()
+app = FastAPI(title="GitHub Issue Summarizer API")
 
-class Query(BaseModel):
+class QueryRequest(BaseModel):
     prompt: str
 
 @app.post("/chat")
-async def chat_with_agent(query: Query):
-    # Pass the user's prompt to the ADK agent
-    response = release_agent.run(query.prompt)
-    return {"response": response}
+async def chat_with_agent(request: QueryRequest):
+    # Pass the user's prompt directly to the ADK agent
+    # Example prompt: "Summarize the 5 most recent issues in facebook/react"
+    response = github_agent.run(request.prompt)
+    
+    return {
+        "agent": "GitHub Issue Summarizer",
+        "response": response
+    }
