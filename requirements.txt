@@ -1,4 +1,4 @@
-google-adk
-fastapi
-uvicorn
-pydantic
+mcp
+google-genai
+flask
+gunicorn
