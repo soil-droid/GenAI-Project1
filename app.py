@@ -1,7 +1,7 @@
 import os
 import asyncio
 from flask import Flask, request, render_template_string
-from agent import run_agent
+from agent import run_adk_agent
 
 app = Flask(__name__)
 

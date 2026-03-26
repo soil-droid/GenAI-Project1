@@ -1,0 +1,117 @@
+D:\code\GenAI-Project1\agent.py:15: DeprecationWarning: MCPToolset class is deprecated, use `McpToolset` instead.
+  mcp_toolset = MCPToolset(connection_params=server_params)
+StdioServerParameters is not recommended. Please use StdioConnectionParams.
+Processing request of type ListToolsRequest
+D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\features\_feature_decorator.py:72: UserWarning: [EXPERIMENTAL] feature FeatureName.BASE_AUTHENTICATED_TOOL is enabled.
+  check_feature_enabled()
+Exception in thread Thread-1 (_asyncio_thread_main):
+Traceback (most recent call last):
+  File "C:\Users\ahmed\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\ahmed\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\runners.py", line 486, in _asyncio_thread_main
+    asyncio.run(_invoke_run_async())
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ahmed\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\ahmed\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\ahmed\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\runners.py", line 479, in _invoke_run_async
+    async for event in agen:
+      event_queue.put(event)
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\runners.py", line 632, in run_async
+    async for event in agen:
+      yield event
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\runners.py", line 617, in _run_with_trace
+    async for event in agen:
+      yield event
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\runners.py", line 853, in _exec_with_plugin
+    async for event in agen:
+    ...<64 lines>...
+        yield event
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\runners.py", line 606, in execute
+    async for event in agen:
+      yield event
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\agents\base_agent.py", line 297, in run_async
+    async for event in agen:
+      yield event
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\agents\llm_agent.py", line 479, in _run_async_impl
+    async for event in agen:
+    ...<5 lines>...
+        should_pause = True
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\flows\llm_flows\base_llm_flow.py", line 758, in run_async
+    async for event in agen:
+      last_event = event
+      yield event
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\flows\llm_flows\base_llm_flow.py", line 835, in _run_one_step_async
+    async for llm_response in agen:
+    ...<13 lines>...
+          yield event
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\flows\llm_flows\base_llm_flow.py", line 1192, in _call_llm_async
+    async for event in agen:
+      yield event
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\flows\llm_flows\base_llm_flow.py", line 1175, in _call_llm_with_tracing
+    async for llm_response in agen:
+    ...<13 lines>...
+      yield llm_response
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\flows\llm_flows\base_llm_flow.py", line 1251, in _run_and_handle_error
+    async for response in agen:
+      yield response
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\flows\llm_flows\base_llm_flow.py", line 395, in _run_and_handle_error
+    raise model_error
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\flows\llm_flows\base_llm_flow.py", line 376, in _run_and_handle_error
+    async for llm_response in agen:
+    ...<5 lines>...
+      yield llm_response
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\models\google_llm.py", line 165, in generate_content_async
+    await self._preprocess_request(llm_request)
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\models\google_llm.py", line 432, in _preprocess_request
+    if self._api_backend == GoogleLLMVariant.GEMINI_API:
+       ^^^^^^^^^^^^^^^^^
+  File "C:\Users\ahmed\AppData\Local\Python\pythoncore-3.14-64\Lib\functools.py", line 1126, in __get__
+    val = self.func(instance)
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\models\google_llm.py", line 319, in _api_backend
+    if self.api_client.vertexai
+       ^^^^^^^^^^^^^^^
+  File "C:\Users\ahmed\AppData\Local\Python\pythoncore-3.14-64\Lib\functools.py", line 1126, in __get__
+    val = self.func(instance)
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\adk\models\google_llm.py", line 307, in api_client
+    return Client(
+        http_options=types.HttpOptions(
+    ...<3 lines>...
+        )
+    )
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\genai\client.py", line 426, in __init__
+    self._api_client = self._get_api_client(
+                       ~~~~~~~~~~~~~~~~~~~~^
+        vertexai=vertexai,
+        ^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        http_options=http_options,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\genai\client.py", line 474, in _get_api_client
+    return BaseApiClient(
+        vertexai=vertexai,
+    ...<4 lines>...
+        http_options=http_options,
+    )
+  File "D:\code\GenAI-Project1\venv\Lib\site-packages\google\genai\_api_client.py", line 707, in __init__
+    raise ValueError(
+    ...<3 lines>...
+    )
+ValueError: No API key was provided. Please pass a valid API key. Learn how to create an API key at https://ai.google.dev/gemini-api/docs/api-key.
+User: I have exactly $2500 and I want to build a PC for 3D modeling. What parts should I get?
+
+Agent is thinking...
+
+Agent: 

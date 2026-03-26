@@ -4,13 +4,15 @@ from google.adk.sessions import InMemorySessionService
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StdioServerParameters
 from google.genai import types
 
+import sys
+
 # 1. Configure the MCP Toolset
 # This tells ADK to spin up your server.py and automatically ingest its tools
 server_params = StdioServerParameters(
-    command="python",
+    command=sys.executable,
     args=["server.py"]
 )
-mcp_toolset = MCPToolset(server_parameters=server_params)
+mcp_toolset = MCPToolset(connection_params=server_params)
 
 # 2. Define the ADK Agent
 # The ADK Agent class handles the reasoning loop natively
@@ -31,17 +33,11 @@ rig_builder_agent = Agent(
 # ADK uses a Runner to orchestrate the agent execution and keep track of chat history
 session_service = InMemorySessionService()
 
-# Create a default session for our web app
-session = session_service.create_session(
-    app_name="rig_builder_app",
-    user_id="web_user",
-    session_id="default_session"
-)
-
 runner = Runner(
     agent=rig_builder_agent,
     app_name="rig_builder_app",
-    session_service=session_service
+    session_service=session_service,
+    auto_create_session=True
 )
 
 def run_adk_agent(user_prompt: str) -> str:
