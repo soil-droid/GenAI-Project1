@@ -1,5 +1,0 @@
-mcp
-google-genai
-google-adk
-flask
-gunicorn
