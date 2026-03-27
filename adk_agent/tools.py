@@ -14,6 +14,6 @@ def get_iss_toolset():
         command=sys.executable, 
         args=[server_script]
     )
-    
+    print(f"Connecting to MCP Server at: {server_script}")
     tools = MCPToolset(connection_params=server_params)
     return tools

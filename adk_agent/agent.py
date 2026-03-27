@@ -7,8 +7,9 @@ import tools
 iss_toolset = tools.get_iss_toolset()
 
 # Define the Agent
+print("Initializing ISS_Tracker_Agent...")
 root_agent = LlmAgent(
-    model='gemini-3.1-pro-preview', 
+    model='gemini-1.5-flash', 
     name='ISS_Tracker_Agent',
     instruction="""
     You are an enthusiastic geography and space expert. 
@@ -20,3 +21,4 @@ root_agent = LlmAgent(
     """,
     tools=[iss_toolset]
 )
+print("Agent initialized successfully.")
