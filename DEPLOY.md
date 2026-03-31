@@ -1,5 +1,5 @@
-# WikiGuide Agent — Complete Deployment Guide
-## ADK + Wikipedia MCP Server on Cloud Run
+# ISS Orbit Agent — Deployment Guide
+## Single Container · Google Cloud Run
 
 ---
 
@@ -9,21 +9,20 @@
 User Browser
      │
      ▼
-┌─────────────────────────┐
-│   ADK Agent (Cloud Run) │  ← Your submission URL
-│   wiki-guide-agent      │
-│   FastAPI + Gemini 2.0  │
-└───────────┬─────────────┘
-            │  MCP over SSE (HTTP)
-            ▼
-┌─────────────────────────┐
-│  Wikipedia MCP Server   │
-│  (Cloud Run)            │
-│  FastMCP + wikipedia    │
-└─────────────────────────┘
-            │
-            ▼
-     Wikipedia API
+┌─────────────────────────────────────┐
+│   ISS Orbit Agent  (Cloud Run)      │  ← Single container, single service
+│                                     │
+│   agent/main.py  (FastAPI, :8080)   │
+│   agent/agent.py (ADK + Gemini)     │
+│            │                        │
+│            │  subprocess (stdio)    │
+│            ▼                        │
+│   server/main.py (FastMCP)          │
+│            │                        │
+│            │  HTTP                  │
+└────────────┼────────────────────────┘
+             ▼
+    api.open-notify.org  (ISS location — free, no key)
 ```
 
 ---
@@ -43,7 +42,8 @@ gcloud services enable \
   run.googleapis.com \
   cloudbuild.googleapis.com \
   secretmanager.googleapis.com \
-  artifactregistry.googleapis.com
+  artifactregistry.googleapis.com \
+  aiplatform.googleapis.com
 ```
 
 ---
@@ -51,10 +51,10 @@ gcloud services enable \
 ## Step 1 — Create Artifact Registry Repository
 
 ```bash
-gcloud artifacts repositories create wiki-mcp-agent \
+gcloud artifacts repositories create iss-mcp-agent \
   --repository-format=docker \
   --location=us-central1 \
-  --description="WikiGuide ADK Agent images"
+  --description="ISS Orbit Agent container images"
 
 # Authenticate Docker to Artifact Registry
 gcloud auth configure-docker us-central1-docker.pkg.dev
@@ -65,92 +65,40 @@ gcloud auth configure-docker us-central1-docker.pkg.dev
 ## Step 2 — Store Gemini API Key in Secret Manager
 
 ```bash
-# Create the secret
+# Create the secret (get your key from https://aistudio.google.com/app/apikey)
 echo -n "YOUR_GEMINI_API_KEY_HERE" | \
   gcloud secrets create gemini-api-key \
   --data-file=- \
   --replication-policy=automatic
 
-# Verify it was created
+# Verify
 gcloud secrets list
 ```
-> Get your Gemini API key from: https://aistudio.google.com/app/apikey
 
 ---
 
-## Step 3 — Deploy the Wikipedia MCP Server
-
-### 3a. Build and push the MCP Server image
+## Step 3 — Build & Push the Container Image
 
 ```bash
-cd mcp-server
+# From the project root (where Dockerfile lives)
+docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/iss-mcp-agent/iss-orbit-agent:latest .
 
-# Build image
-docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/wiki-mcp-agent/wiki-mcp-server:latest .
-
-# Push to Artifact Registry
-docker push us-central1-docker.pkg.dev/$PROJECT_ID/wiki-mcp-agent/wiki-mcp-server:latest
-```
-
-### 3b. Deploy MCP Server to Cloud Run
-
-```bash
-gcloud run deploy wiki-mcp-server \
-  --image=us-central1-docker.pkg.dev/$PROJECT_ID/wiki-mcp-agent/wiki-mcp-server:latest \
-  --region=us-central1 \
-  --platform=managed \
-  --allow-unauthenticated \
-  --memory=512Mi \
-  --cpu=1 \
-  --min-instances=0 \
-  --max-instances=3 \
-  --port=8080
-```
-
-### 3c. Save the MCP Server URL
-
-```bash
-MCP_SERVER_URL=$(gcloud run services describe wiki-mcp-server \
-  --region=us-central1 \
-  --format='value(status.url)')
-
-echo "MCP Server URL: $MCP_SERVER_URL"
-# e.g. https://wiki-mcp-server-abc123-uc.a.run.app
-```
-
-### 3d. Test the MCP Server
-
-```bash
-# Health check — should return the SSE endpoint info
-curl "$MCP_SERVER_URL/sse"
+docker push us-central1-docker.pkg.dev/$PROJECT_ID/iss-mcp-agent/iss-orbit-agent:latest
 ```
 
 ---
 
-## Step 4 — Deploy the ADK Agent
+## Step 4 — Deploy to Cloud Run
 
-### 4a. Build and push the Agent image
-
-```bash
-cd ../adk-agent
-
-# Build image
-docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/wiki-mcp-agent/wiki-guide-agent:latest .
-
-# Push to Artifact Registry
-docker push us-central1-docker.pkg.dev/$PROJECT_ID/wiki-mcp-agent/wiki-guide-agent:latest
-```
-
-### 4b. Get your Cloud Run service account
+### 4a. Get the default service account
 
 ```bash
-# Cloud Run uses the default compute service account
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
 SERVICE_ACCOUNT="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 echo "Service Account: $SERVICE_ACCOUNT"
 ```
 
-### 4c. Grant Secret Manager access to service account
+### 4b. Grant Secret Manager access
 
 ```bash
 gcloud secrets add-iam-policy-binding gemini-api-key \
@@ -158,11 +106,11 @@ gcloud secrets add-iam-policy-binding gemini-api-key \
   --role="roles/secretmanager.secretAccessor"
 ```
 
-### 4d. Deploy ADK Agent to Cloud Run
+### 4c. Deploy
 
 ```bash
-gcloud run deploy wiki-guide-agent \
-  --image=us-central1-docker.pkg.dev/$PROJECT_ID/wiki-mcp-agent/wiki-guide-agent:latest \
+gcloud run deploy iss-orbit-agent \
+  --image=us-central1-docker.pkg.dev/$PROJECT_ID/iss-mcp-agent/iss-orbit-agent:latest \
   --region=us-central1 \
   --platform=managed \
   --allow-unauthenticated \
@@ -171,20 +119,19 @@ gcloud run deploy wiki-guide-agent \
   --min-instances=0 \
   --max-instances=5 \
   --port=8080 \
-  --set-env-vars="MCP_SERVER_URL=$MCP_SERVER_URL" \
   --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest"
 ```
 
-### 4e. Get your submission URL 🎉
+### 4d. Get the submission URL 🎉
 
 ```bash
-AGENT_URL=$(gcloud run services describe wiki-guide-agent \
+AGENT_URL=$(gcloud run services describe iss-orbit-agent \
   --region=us-central1 \
   --format='value(status.url)')
 
-echo "================================================"
+echo "==========================================="
 echo "  SUBMISSION URL: $AGENT_URL"
-echo "================================================"
+echo "==========================================="
 ```
 
 ---
@@ -192,35 +139,30 @@ echo "================================================"
 ## Step 5 — Test End-to-End
 
 ```bash
-# Test the health endpoint
+# Health check
 curl "$AGENT_URL/health"
 
-# Test the chat API
+# Ask where the ISS is
 curl -X POST "$AGENT_URL/chat" \
   -H "Content-Type: application/json" \
-  -d '{"message": "What is quantum computing?"}'
+  -d '{"message": "Where is the ISS right now?"}'
 
-# Open the web UI in browser
-echo "Open: $AGENT_URL"
+# Open the chat UI
+echo "Open in browser: $AGENT_URL"
 ```
 
 ---
 
-## Step 6 — Viewing Logs (for debugging)
+## Step 6 — View Logs
 
 ```bash
-# MCP Server logs
-gcloud run services logs read wiki-mcp-server \
-  --region=us-central1 \
-  --limit=50
-
-# Agent logs
-gcloud run services logs read wiki-guide-agent \
+# View recent logs
+gcloud run services logs read iss-orbit-agent \
   --region=us-central1 \
   --limit=50
 
 # Stream live logs
-gcloud run services logs tail wiki-guide-agent \
+gcloud run services logs tail iss-orbit-agent \
   --region=us-central1
 ```
 
@@ -229,16 +171,15 @@ gcloud run services logs tail wiki-guide-agent \
 ## Step 7 — Cleanup (after submission)
 
 ```bash
-# Delete Cloud Run services
-gcloud run services delete wiki-mcp-server --region=us-central1 --quiet
-gcloud run services delete wiki-guide-agent --region=us-central1 --quiet
+# Delete Cloud Run service
+gcloud run services delete iss-orbit-agent --region=us-central1 --quiet
 
-# Delete Artifact Registry images
-gcloud artifacts repositories delete wiki-mcp-agent \
+# Delete Artifact Registry repo
+gcloud artifacts repositories delete iss-mcp-agent \
   --location=us-central1 \
   --quiet
 
-# Delete the secret
+# Delete secret
 gcloud secrets delete gemini-api-key --quiet
 ```
 
@@ -248,19 +189,19 @@ gcloud secrets delete gemini-api-key --quiet
 
 | Problem | Fix |
 |---------|-----|
-| `GOOGLE_API_KEY not set` | Check secrets are mounted: `gcloud run services describe wiki-guide-agent --format=yaml` |
-| MCP connection timeout | Ensure MCP Server is deployed with `--allow-unauthenticated` |
-| Cold start slow | Set `--min-instances=1` on the agent service |
-| 502 Bad Gateway | Check agent logs for startup errors |
-| Wikipedia rate limit | Add `time.sleep(0.5)` between MCP tool calls in main.py |
+| `GOOGLE_API_KEY not set` | Check secret is mounted: `gcloud run services describe iss-orbit-agent --format=yaml` |
+| `ModuleNotFoundError: agent` | Ensure `CMD` runs from `/app` directory and `agent/__init__.py` exists |
+| `StdioServerParameters` import error | Upgrade: `pip install --upgrade google-adk` |
+| ISS API timeout | Open-Notify is a free service — retry after a few seconds |
+| Cold start slow | Set `--min-instances=1` |
 
 ---
 
 ## Quick Reference
 
 ```bash
-# Useful aliases to add to your shell session
 export PROJECT_ID="your-project-id"
 export REGION="us-central1"
-export REGISTRY="us-central1-docker.pkg.dev/$PROJECT_ID/wiki-mcp-agent"
+export REGISTRY="us-central1-docker.pkg.dev/$PROJECT_ID/iss-mcp-agent"
+export IMAGE="$REGISTRY/iss-orbit-agent:latest"
 ```

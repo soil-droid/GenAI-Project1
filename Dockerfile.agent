@@ -1,17 +1,17 @@
+# ISS ADK Agent — standalone image (requires MCP server in same container)
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY server/requirements.txt /app/server/requirements.txt
+COPY agent/requirements.txt  /app/agent/requirements.txt
 
-# Copy agent module and server
-COPY wiki_agent/ ./wiki_agent/
-COPY main.py .
+RUN pip install --no-cache-dir -r /app/server/requirements.txt \
+ && pip install --no-cache-dir -r /app/agent/requirements.txt
 
-# Cloud Run injects PORT
-ENV PORT=8080
+COPY server/ /app/server/
+COPY agent/  /app/agent/
+
 EXPOSE 8080
 
-CMD ["python", "main.py"]
+CMD ["python", "agent/main.py"]
