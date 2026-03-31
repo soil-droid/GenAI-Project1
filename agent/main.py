@@ -75,7 +75,7 @@ async def health_check():
     return {
         "status": "healthy",
         "agent": "ISS Orbit Agent",
-        "model": "gemini-2.0-flash",
+        "model": "gemini-2.5-flash",
         "data_source": "api.open-notify.org",
     }
 

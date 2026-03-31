@@ -18,7 +18,7 @@ _SERVER_SCRIPT = os.path.join(
 
 root_agent = Agent(
     name="iss_orbit_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description=(
         "ISS Orbit Agent — tracks the International Space Station in real-time "
         "and identifies the geographic region it is currently flying over."
