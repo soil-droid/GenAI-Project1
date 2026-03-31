@@ -29,4 +29,4 @@ COPY agent/  /app/agent/
 EXPOSE 8080
 
 # Run the FastAPI agent (which spawns the MCP server subprocess on demand)
-CMD ["python", "agent/main.py"]
+CMD ["python", "-m", "agent.main"]
